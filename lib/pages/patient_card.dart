@@ -14,9 +14,23 @@ class PatientCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final lastVisit = patient['lastVisit'] != null
-        ? DateFormat('MMM d, yyyy').format((patient['lastVisit'] as Timestamp).toDate())
-        : 'Never visited';
+    String lastVisit;
+    
+    try {
+      if (patient['lastVisit'] == null) {
+        lastVisit = 'Never visited';
+      } else if (patient['lastVisit'] is String) {
+        // Handle string date format
+        final date = DateTime.parse(patient['lastVisit']);
+        lastVisit = DateFormat('MMM d, yyyy').format(date);
+      } else {
+        // Handle Firestore Timestamp
+        lastVisit = DateFormat('MMM d, yyyy')
+            .format((patient['lastVisit'] as Timestamp).toDate());
+      }
+    } catch (e) {
+      lastVisit = 'Date error';
+    }
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
@@ -35,7 +49,9 @@ class PatientCard extends StatelessWidget {
                 radius: 25,
                 backgroundColor: Colors.blue[100],
                 child: Text(
-                  patient['name'][0],
+                  patient['name']?.toString().isNotEmpty ?? false 
+                      ? patient['name'][0].toString().toUpperCase()
+                      : '?',
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -49,7 +65,7 @@ class PatientCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      patient['name'],
+                      patient['name']?.toString() ?? 'Unknown Patient',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -57,7 +73,7 @@ class PatientCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Age: ${patient['age'] ?? 'N/A'} | ${patient['gender'] ?? ''}',
+                      'Age: ${patient['age']?.toString() ?? 'N/A'} | ${patient['gender']?.toString() ?? ''}',
                       style: TextStyle(color: Colors.grey[600]),
                     ),
                   ],

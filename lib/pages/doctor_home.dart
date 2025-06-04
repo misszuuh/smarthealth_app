@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'appointment_card.dart';
 import 'patient_card.dart';
 import 'profile_screen.dart';
-
 
 class DoctorHomeScreen extends StatefulWidget {
   const DoctorHomeScreen({super.key});
@@ -16,14 +13,68 @@ class DoctorHomeScreen extends StatefulWidget {
 
 class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
   int _currentIndex = 0;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  late User _currentUser;
+  
+  // Mock doctor data
+  final Map<String, dynamic> _mockDoctor = {
+    'name': 'Sarah Johnson',
+    'specialization': 'Cardiologist',
+    'upcomingAppointments': 5,
+    'totalPatients': 24,
+    'unreadMessages': 3,
+  };
 
-  @override
-  void initState() {
-    super.initState();
-    _currentUser = FirebaseAuth.instance.currentUser!;
-  }
+  // Mock appointments data
+  final List<Map<String, dynamic>> _mockAppointments = [
+    {
+      'id': '1',
+      'patientName': 'John Doe',
+      'date': '2023-06-15',
+      'time': '09:30 AM',
+      'reason': 'Heart checkup',
+      'status': 'Scheduled',
+    },
+    {
+      'id': '2',
+      'patientName': 'Mary Smith',
+      'date': '2023-06-15',
+      'time': '10:45 AM',
+      'reason': 'Follow-up',
+      'status': 'Confirmed',
+    },
+    {
+      'id': '3',
+      'patientName': 'Robert Johnson',
+      'date': '2023-06-15',
+      'time': '02:15 PM',
+      'reason': 'Annual physical',
+      'status': 'Completed',
+    },
+  ];
+
+  // Mock patients data
+  final List<Map<String, dynamic>> _mockPatients = [
+    {
+      'id': '1',
+      'name': 'John Doe',
+      'lastVisit': '2023-06-10',
+      'age': 45,
+      'gender': 'Male',
+    },
+    {
+      'id': '2',
+      'name': 'Mary Smith',
+      'lastVisit': '2023-06-08',
+      'age': 32,
+      'gender': 'Female',
+    },
+    {
+      'id': '3',
+      'name': 'Robert Johnson',
+      'lastVisit': '2023-06-05',
+      'age': 58,
+      'gender': 'Male',
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +91,6 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
               // Navigate to notifications
             },
           ),
-          
         ],
       ),
       body: _buildBody(),
@@ -81,7 +131,7 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
       case 1:
         return _buildAppointments();
       case 2:
-        return ProfileScreen(userId: _currentUser.uid);
+        return ProfileScreen(userId: 'mock-user-id');
       default:
         return _buildDashboard();
     }
@@ -104,49 +154,39 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
   }
 
   Widget _buildWelcomeCard() {
-    return StreamBuilder<DocumentSnapshot>(
-      stream: _firestore.collection('doctors').doc(_currentUser.uid).snapshots(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const CircularProgressIndicator();
-        }
+    final greeting = _getGreeting();
+    final name = _mockDoctor['name'] ?? 'Doctor';
+    final specialization = _mockDoctor['specialization'] ?? 'General Practitioner';
 
-        final doctorData = snapshot.data!.data() as Map<String, dynamic>;
-        final greeting = _getGreeting();
-        final name = doctorData['name'] ?? 'Doctor';
-        final specialization = doctorData['specialization'] ?? 'General Practitioner';
-
-        return Card(
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('$greeting, Dr. $name',
+                style: const TextStyle(
+                    fontSize: 22, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Text(specialization,
+                style: TextStyle(
+                    fontSize: 16, color: Colors.grey[600])),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('$greeting, Dr. $name',
-                    style: const TextStyle(
-                        fontSize: 22, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                Text(specialization,
-                    style: TextStyle(
-                        fontSize: 16, color: Colors.grey[600])),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildStatCard('Upcoming', '5', Icons.calendar_today),
-                    _buildStatCard('Patients', '24', Icons.people),
-                    _buildStatCard('Messages', '3', Icons.message),
-                  ],
-                ),
+                _buildStatCard('Upcoming', _mockDoctor['upcomingAppointments'].toString(), Icons.calendar_today),
+                _buildStatCard('Patients', _mockDoctor['totalPatients'].toString(), Icons.people),
+                _buildStatCard('Messages', _mockDoctor['unreadMessages'].toString(), Icons.message),
               ],
             ),
-          ),
-        );
-      },
+          ],
+        ),
+      ),
     );
   }
 
@@ -173,6 +213,7 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
 
   Widget _buildTodayAppointments() {
     final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final todaysAppointments = _mockAppointments.where((appt) => appt['date'] == today).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -180,43 +221,24 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
         const Text('Today\'s Appointments',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 10),
-        StreamBuilder<QuerySnapshot>(
-          stream: _firestore
-              .collection('appointments')
-              .where('doctorId', isEqualTo: _currentUser.uid)
-              .where('date', isEqualTo: today)
-              .orderBy('time')
-              .snapshots(),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            final appointments = snapshot.data!.docs;
-
-            if (appointments.isEmpty) {
-              return const Card(
+        todaysAppointments.isEmpty
+            ? const Card(
                 child: Padding(
                   padding: EdgeInsets.all(16.0),
                   child: Text('No appointments scheduled for today'),
                 ),
-              );
-            }
-
-            return ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: appointments.length,
-              itemBuilder: (context, index) {
-                final appointment = appointments[index].data() as Map<String, dynamic>;
-                return AppointmentCard(
-                  appointment: appointment,
-                  onTap: () => _navigateToAppointmentDetail(appointments[index].id),
-                );
-              },
-            );
-          },
-        ),
+              )
+            : ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: todaysAppointments.length,
+                itemBuilder: (context, index) {
+                  return AppointmentCard(
+                    appointment: todaysAppointments[index],
+                    onTap: () => _navigateToAppointmentDetail(todaysAppointments[index]['id']),
+                  );
+                },
+              ),
       ],
     );
   }
@@ -228,30 +250,14 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
         const Text('Recent Patients',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 10),
-        StreamBuilder<QuerySnapshot>(
-          stream: _firestore
-              .collection('patients')
-              .orderBy('lastVisit', descending: true)
-              .limit(5)
-              .snapshots(),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            final patients = snapshot.data!.docs;
-
-            return ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: patients.length,
-              itemBuilder: (context, index) {
-                final patient = patients[index].data() as Map<String, dynamic>;
-                return PatientCard(
-                  patient: patient,
-                  onTap: () => _navigateToPatientDetail(patients[index].id),
-                );
-              },
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _mockPatients.length,
+          itemBuilder: (context, index) {
+            return PatientCard(
+              patient: _mockPatients[index],
+              onTap: () => _navigateToPatientDetail(_mockPatients[index]['id']),
             );
           },
         ),
@@ -260,34 +266,13 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
   }
 
   Widget _buildAppointments() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: _firestore
-          .collection('appointments')
-          .where('doctorId', isEqualTo: _currentUser.uid)
-          .orderBy('date')
-          .orderBy('time')
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        final appointments = snapshot.data!.docs;
-
-        if (appointments.isEmpty) {
-          return const Center(child: Text('No appointments scheduled'));
-        }
-
-        return ListView.builder(
-          padding: const EdgeInsets.all(16.0),
-          itemCount: appointments.length,
-          itemBuilder: (context, index) {
-            final appointment = appointments[index].data() as Map<String, dynamic>;
-            return AppointmentCard(
-              appointment: appointment,
-              onTap: () => _navigateToAppointmentDetail(appointments[index].id),
-            );
-          },
+    return ListView.builder(
+      padding: const EdgeInsets.all(16.0),
+      itemCount: _mockAppointments.length,
+      itemBuilder: (context, index) {
+        return AppointmentCard(
+          appointment: _mockAppointments[index],
+          onTap: () => _navigateToAppointmentDetail(_mockAppointments[index]['id']),
         );
       },
     );
@@ -305,29 +290,89 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
   }
 
   void _navigateToPatientDetail(String patientId) {
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(
-    //     builder: (context) => PatientDetailScreen(patientId: patientId),
-    //   ),
-    // );
-  }
-
-  void _navigateToAppointmentDetail(String appointmentId) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AppointmentCard(appointment: {}, onTap: () {  },),
+    // Implement patient detail navigation
+    final patient = _mockPatients.firstWhere((p) => p['id'] == patientId);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(patient['name']),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Age: ${patient['age']}'),
+            Text('Gender: ${patient['gender']}'),
+            Text('Last Visit: ${patient['lastVisit']}'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
       ),
     );
   }
 
+  void _navigateToAppointmentDetail(String appointmentId) {
+    final appointment = _mockAppointments.firstWhere((a) => a['id'] == appointmentId);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          appBar: AppBar(title: const Text('Appointment Details')),
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Patient: ${appointment['patientName']}', 
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                Text('Date: ${appointment['date']}'),
+                Text('Time: ${appointment['time']}'),
+                Text('Reason: ${appointment['reason']}'),
+                const SizedBox(height: 16),
+                Chip(
+                  label: Text(appointment['status']),
+                  backgroundColor: _getStatusColor(appointment['status']),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return Colors.green[100]!;
+      case 'cancelled':
+        return Colors.red[100]!;
+      case 'confirmed':
+        return Colors.blue[100]!;
+      default:
+        return Colors.orange[100]!;
+    }
+  }
+
   void _navigateToAddAppointment() {
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(
-    //     builder: (context) => const AddAppointmentScreen(),
-    //   ),
-    // );
+    // Implement add appointment
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add New Appointment'),
+        content: const Text('This would open a form to add new appointment in the real app.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 }

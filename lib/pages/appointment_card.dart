@@ -13,21 +13,39 @@ class AppointmentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final date = DateFormat('MMM d, yyyy').format(DateTime.parse(appointment['date']));
-    final time = appointment['time'];
-    final patientName = appointment['patientName'];
-    final status = appointment['status'] ?? 'Scheduled';
-    Color statusColor;
+    // Safe date parsing with fallback
+    DateTime? appointmentDate;
+    try {
+      appointmentDate = DateTime.parse(appointment['date'] ?? '');
+    } catch (e) {
+      appointmentDate = DateTime.now();
+    }
 
-    switch (status) {
-      case 'Completed':
-        statusColor = Colors.green;
+    final date = DateFormat('MMM d, yyyy').format(appointmentDate);
+    final time = appointment['time']?.toString() ?? '--:--';
+    final patientName = appointment['patientName']?.toString() ?? 'Unknown Patient';
+    final status = appointment['status']?.toString() ?? 'Scheduled';
+    final reason = appointment['reason']?.toString() ?? 'General Checkup';
+    
+    Color statusColor;
+    Color textColor;
+
+    switch (status.toLowerCase()) {
+      case 'completed':
+        statusColor = Colors.green[100]!;
+        textColor = Colors.green[800]!;
         break;
-      case 'Cancelled':
-        statusColor = Colors.red;
+      case 'cancelled':
+        statusColor = Colors.red[100]!;
+        textColor = Colors.red[800]!;
+        break;
+      case 'confirmed':
+        statusColor = Colors.blue[100]!;
+        textColor = Colors.blue[800]!;
         break;
       default:
-        statusColor = Colors.orange;
+        statusColor = Colors.orange[100]!;
+        textColor = Colors.orange[800]!;
     }
 
     return Card(
@@ -64,8 +82,9 @@ class AppointmentCard extends StatelessWidget {
                     child: Text(
                       status,
                       style: TextStyle(
-                        color: statusColor,
+                        color: textColor,
                         fontWeight: FontWeight.bold,
+                        fontSize: 12,
                       ),
                     ),
                   ),
@@ -73,7 +92,7 @@ class AppointmentCard extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Reason: ${appointment['reason'] ?? 'General Checkup'}',
+                'Reason: $reason',
                 style: TextStyle(color: Colors.grey[600]),
               ),
               const SizedBox(height: 8),

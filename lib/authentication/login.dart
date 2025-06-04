@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:smarthealth_app/authentication/auth_service.dart';
 import 'package:smarthealth_app/authentication/sign_up.dart';
 
+
+import '../pages/doctor_home.dart';
 import '../pages/welcomepage.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -52,45 +54,50 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   Future<void> _login() async {
-    if (_isLoading || !_formKey.currentState!.validate()) return;
+  if (_isLoading || !_formKey.currentState!.validate()) return;
+  
+  final email = _emailController.text.trim();
+  final password = _passwordController.text;
+
+  setState(() => _isLoading = true);
+
+  try {
+    final authResult = await _authService.signInWithEmailAndPassword(email, password);
     
-    final email = _emailController.text.trim();
-    final password = _passwordController.text;
-
-    setState(() => _isLoading = true);
-
-    try {
-      final user = await _authService.signInWithEmailAndPassword(email, password);
+    if (!mounted) return;
+    
+    if (authResult != null) {
+      final role = authResult['role'] as String;
+      final name = authResult['name'] as String;
       
-      if (!mounted) return;
-      
-      
-      if (user != null) {
+      if (role == 'doctor') {
         Navigator.pushReplacement(
           context,
-          PageRouteBuilder(
-            pageBuilder: (_, __, ___) => WelcomePage(username: '', role: '',),
-            transitionsBuilder: (_, animation, __, child) {
-              return FadeTransition(
-                opacity: animation,
-                child: child,
-              );
-            },
+          MaterialPageRoute(
+            builder: (_) => DoctorHomeScreen(),
+          ),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => WelcomePage(username: name, role: role),
           ),
         );
       }
-    } on FirebaseAuthException catch (e) {
-      if (!mounted) return;
-      _showErrorMessage(e.code);
-    } catch (e) {
-      if (!mounted) return;
-      _showErrorMessage();
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+    }
+  } on FirebaseAuthException catch (e) {
+    if (!mounted) return;
+    _showErrorMessage(e.code);
+  } catch (e) {
+    if (!mounted) return;
+    _showErrorMessage();
+  } finally {
+    if (mounted) {
+      setState(() => _isLoading = false);
     }
   }
+}
 
   void _showErrorMessage([String? code]) {
     String message = 'Login failed. Please try again.';

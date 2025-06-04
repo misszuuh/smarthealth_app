@@ -16,22 +16,28 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<OnboardingPage> _pages = [
     OnboardingPage(
-      icon: Icons.monitor_heart,
+      icon: Icons.monitor_heart_outlined,
       title: "Real-Time Health Tracking",
-      description: "Monitor your vital signs 24/7 with our advanced health monitoring system.",
+      description: "Continuously monitor your heart rate, blood pressure, and other vital signs with our advanced health monitoring system.",
       color: Colors.blue,
+      iconColor: Colors.white,
+      iconBackground: Colors.blue,
     ),
     OnboardingPage(
-      icon: Icons.notifications_active,
+      icon: Icons.notification_important_outlined,
       title: "Instant Alerts",
-      description: "Get immediate notifications for critical health changes.",
+      description: "Receive immediate notifications for any critical changes in your health metrics, keeping you informed and safe.",
       color: Colors.red,
+      iconColor: Colors.white,
+      iconBackground: Colors.red,
     ),
     OnboardingPage(
-      icon: Icons.security,
+      icon: Icons.lock_outline,
       title: "Secure & Private",
-      description: "Your health data is encrypted with enterprise-grade security.",
+      description: "Your health data is encrypted with enterprise-grade security and never shared without your consent.",
       color: Colors.green,
+      iconColor: Colors.white,
+      iconBackground: Colors.green,
     ),
   ];
 
@@ -126,6 +132,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
+                        elevation: 3,
+                        shadowColor: _pages[_currentPage].color
                       ),
                       child: Text(
                         _currentPage == _pages.length - 1 
@@ -154,6 +162,8 @@ class OnboardingPage extends StatelessWidget {
   final String title;
   final String description;
   final Color color;
+  final Color iconColor;
+  final Color iconBackground;
 
   const OnboardingPage({
     super.key,
@@ -161,6 +171,8 @@ class OnboardingPage extends StatelessWidget {
     required this.title,
     required this.description,
     required this.color,
+    required this.iconColor,
+    required this.iconBackground,
   });
 
   @override
@@ -170,17 +182,25 @@ class OnboardingPage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Animated Icon
+          // Icon with background
           Container(
+            width: 120,
+            height: 120,
             decoration: BoxDecoration(
-              color: color,
+              color: iconBackground,
               shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: color,
+                  blurRadius: 15,
+                  spreadRadius: 3,
+                ),
+              ],
             ),
-            padding: const EdgeInsets.all(24),
             child: Icon(
               icon,
               size: 60,
-              color: color,
+              color: iconColor,
             ),
           ),
           

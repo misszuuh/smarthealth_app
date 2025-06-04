@@ -47,29 +47,29 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyBCXGbgltOfd_ED-NbhTZKKgJDv7gwMI5E',
-    appId: '1:917662206166:web:96c523a6cc814864e9e177',
-    messagingSenderId: '917662206166',
-    projectId: 'smarthealth-7c67a',
-    authDomain: 'smarthealth-7c67a.firebaseapp.com',
-    storageBucket: 'smarthealth-7c67a.firebasestorage.app',
-    measurementId: 'G-33VY1Z9BN2',
+    apiKey: 'AIzaSyBL3MBKnoF1Q3gtX4mtgcjYQmSLl42wggs',
+    appId: '1:293036840078:web:e6b35832f645b62a75e5df',
+    messagingSenderId: '293036840078',
+    projectId: 'health-a3691',
+    authDomain: 'health-a3691.firebaseapp.com',
+    storageBucket: 'health-a3691.firebasestorage.app',
+    measurementId: 'G-TQXMJMVWNH',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyAOK7Cxjg-_Ci9vXfXwW53rvCVkemOcRAY',
-    appId: '1:917662206166:android:01eaea28174e99ede9e177',
-    messagingSenderId: '917662206166',
-    projectId: 'smarthealth-7c67a',
-    storageBucket: 'smarthealth-7c67a.firebasestorage.app',
+    apiKey: 'AIzaSyAj2RHYWwQnmkN0sSaflcTbm5_OZ8mhZbU',
+    appId: '1:293036840078:android:36db3c5a2cfb5bd575e5df',
+    messagingSenderId: '293036840078',
+    projectId: 'health-a3691',
+    storageBucket: 'health-a3691.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCVhXel9W4DIuqYfffLPg2aEZr555sk6oY',
-    appId: '1:917662206166:ios:50cc383dfdb04ea0e9e177',
-    messagingSenderId: '917662206166',
-    projectId: 'smarthealth-7c67a',
-    storageBucket: 'smarthealth-7c67a.firebasestorage.app',
+    apiKey: 'AIzaSyCeJBlijseYc7ChA6OgdHsGQFQHIa1yhlc',
+    appId: '1:293036840078:ios:123ea39acf64e12175e5df',
+    messagingSenderId: '293036840078',
+    projectId: 'health-a3691',
+    storageBucket: 'health-a3691.firebasestorage.app',
     iosBundleId: 'com.example.smarthealthApp',
   );
 }
